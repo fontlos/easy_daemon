@@ -34,7 +34,9 @@ pub fn start(exe: &str, args: &[String], output: &str) -> Result<u32, String> {
             dup2(dev_null.as_raw_fd(), 0).map_err(|e| e.to_string())?;
 
             // 重定向标准输出和标准错误
-            if output == "/dev/null" {
+            if output == "" {
+                // Do nothing
+            } else if output == "/dev/null" {
                 // 如果输出是 /dev/null，直接打开
                 let dev_null = OpenOptions::new()
                     .write(true)

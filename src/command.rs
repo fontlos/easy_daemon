@@ -10,6 +10,7 @@ pub enum Command {
         program: String,
         #[clap(short, long, allow_hyphen_values = true)]
         args: Option<Vec<String>>,
+        /// 输出日志文件路径, 默认为 /dev/null, 设置为空字符串 "" 则不重定向日志
         #[clap(short, long)]
         output: Option<String>,
     },
