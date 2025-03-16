@@ -8,7 +8,7 @@ pub enum Command {
         name: String,
         #[clap(short, long)]
         program: String,
-        #[clap(short, long)]
+        #[clap(short, long, allow_hyphen_values = true)]
         args: Option<Vec<String>>,
         #[clap(short, long)]
         output: Option<String>,

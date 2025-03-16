@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
+use std::env;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -23,7 +24,8 @@ fn default_dev_null() -> String {
 
 impl Config {
     pub fn load() -> Self {
-        let config = match std::fs::read_to_string("easy_daemon_config.toml") {
+        let path = env::current_exe().unwrap().parent().unwrap().join("easy_daemon_config.toml");
+        let config = match std::fs::read_to_string(path) {
             Ok(config) => config,
             Err(_) => {
                 return Config {
@@ -56,7 +58,8 @@ impl Config {
     }
 
     pub fn save(&self) {
+        let path = env::current_exe().unwrap().parent().unwrap().join("easy_daemon_config.toml");
         let config = toml::to_string(self).unwrap();
-        std::fs::write("easy_daemon_config.toml", config).unwrap();
+        std::fs::write(path, config).unwrap();
     }
 }

@@ -33,17 +33,27 @@ pub fn start(exe: &str, args: &[String], output: &str) -> Result<u32, String> {
                 .map_err(|e| e.to_string())?;
             dup2(dev_null.as_raw_fd(), 0).map_err(|e| e.to_string())?;
 
-            // 重定向标准输入/输出/错误到 /dev/null 或日志文件
-            let log_file = OpenOptions::new()
-                .create(true)
-                .truncate(true)
-                .open(output)
-                .map_err(|e| e.to_string())?;
-            let log_fd = log_file.as_raw_fd();
-            // 标准输出
-            dup2(log_fd, 1).map_err(|e| e.to_string())?;
-            // 标准错误
-            dup2(log_fd, 2).map_err(|e| e.to_string())?;
+            // 重定向标准输出和标准错误
+            if output == "/dev/null" {
+                // 如果输出是 /dev/null，直接打开
+                let dev_null = OpenOptions::new()
+                    .write(true)
+                    .open("/dev/null")
+                    .map_err(|e| e.to_string())?;
+                let log_fd = dev_null.as_raw_fd();
+                dup2(log_fd, 1).map_err(|e| e.to_string())?; // 标准输出
+                dup2(log_fd, 2).map_err(|e| e.to_string())?; // 标准错误
+            } else {
+                // 如果输出是普通日志文件，使用 OpenOptions 创建和截断文件
+                let log_file = OpenOptions::new()
+                    .create(true)
+                    .append(true) // 使用 append 模式，避免清空日志文件
+                    .open(output)
+                    .map_err(|e| e.to_string())?;
+                let log_fd = log_file.as_raw_fd();
+                dup2(log_fd, 1).map_err(|e| e.to_string())?; // 标准输出
+                dup2(log_fd, 2).map_err(|e| e.to_string())?; // 标准错误
+            }
 
             // 执行目标程序
             match execvp(&exe, &args_cstr) {
